@@ -2,16 +2,18 @@
 use std::io::{self, Write};
 
 fn main() {
-    print!("$ ");
-    io::stdout().flush().unwrap();
+    loop {
+        print!("$ ");
+        io::stdout().flush().unwrap();
 
-    let mut command = String::new();
+        let mut command = String::new();
 
-    io::stdin().read_line(&mut command).unwrap_or_default();
+        io::stdin().read_line(&mut command).unwrap_or_default();
 
-    let command = command.trim();
+        let command = command.trim();
 
-    if !command.is_empty() {
-        println!("{command}: command not found");
+        if !command.is_empty() {
+            println!("{command}: command not found");
+        }
     }
 }
