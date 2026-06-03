@@ -1,7 +1,7 @@
 use std::env;
 use std::path::Path;
 
-use crate::typecmd::is_cmd_exists_and_executable;
+use crate::syscmd::is_cmd_exists_and_executable;
 
 pub fn run(cmd: &str) {
     match cmd {

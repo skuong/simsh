@@ -11,7 +11,9 @@ pub fn is_cmd_exists_and_executable(full_path: &PathBuf) -> bool {
                     return true;
                 }
             }
-            Err(_) => return false,
+            Err(_) => {
+                return false;
+            }
         }
     }
 
