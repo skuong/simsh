@@ -20,6 +20,19 @@ fn main() {
             continue;
         }
 
+        if command.starts_with("type ") {
+            let interpreted_command = &command[5..];
+
+            match interpreted_command {
+                "echo" => println!("{} is a shell builtin", interpreted_command),
+                "exit" => println!("{} is a shell builtin", interpreted_command),
+                "type" => println!("{} is a shell builtin", interpreted_command),
+                _ => println!("{}: not found", interpreted_command),
+            }
+
+            continue;
+        }
+
         match command {
             "" => {
                 continue;
