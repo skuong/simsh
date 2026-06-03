@@ -3,6 +3,7 @@ use std::io::{self, Write};
 use std::process::Command;
 
 use crate::syscmd::is_cmd_exists_in_path_and_executable;
+mod cd;
 mod echo;
 mod pwd;
 mod syscmd;
@@ -26,6 +27,11 @@ fn main() {
 
         if command.starts_with("type ") {
             typecmd::run(&command[5..]);
+            continue;
+        }
+
+        if command.starts_with("cd ") {
+            cd::run(&command[3..]);
             continue;
         }
 

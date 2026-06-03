@@ -9,6 +9,7 @@ pub fn run(cmd: &str) {
         "exit" => println!("{} is a shell builtin", cmd),
         "type" => println!("{} is a shell builtin", cmd),
         "pwd" => println!("{} is a shell builtin", cmd),
+        "cd" => println!("{} is a shell builtin", cmd),
         maybe_cmd => match env::var("PATH") {
             Ok(paths) => {
                 for path in paths.split(":") {
