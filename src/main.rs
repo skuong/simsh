@@ -4,6 +4,7 @@ use std::process::Command;
 
 use crate::syscmd::is_cmd_exists_in_path_and_executable;
 mod echo;
+mod pwd;
 mod syscmd;
 mod typecmd;
 
@@ -25,6 +26,11 @@ fn main() {
 
         if command.starts_with("type ") {
             typecmd::run(&command[5..]);
+            continue;
+        }
+
+        if command == "pwd" {
+            pwd::run();
             continue;
         }
 
