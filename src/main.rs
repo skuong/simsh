@@ -12,8 +12,16 @@ fn main() {
 
         let command = command.trim();
 
-        if !command.is_empty() {
-            println!("{command}: command not found");
+        match command {
+            "" => {
+                continue;
+            }
+            "exit" => {
+                break;
+            }
+            _ => {
+                println!("{command}: command not found");
+            }
         }
     }
 }
