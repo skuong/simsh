@@ -12,6 +12,14 @@ fn main() {
 
         let command = command.trim();
 
+        if command.starts_with("echo") {
+            let message = command.splitn(2, " ").collect::<Vec<&str>>();
+            if message.len() == 2 {
+                println!("{}", message[1]);
+            }
+            continue;
+        }
+
         match command {
             "" => {
                 continue;
