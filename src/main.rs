@@ -2,9 +2,10 @@
 use std::io::{self, Write};
 use std::process::Command;
 
-use crate::syscmd::is_cmd_exists_in_path_and_executable;
+use crate::{parser::command_input_parser, syscmd::is_cmd_exists_in_path_and_executable};
 mod cd;
 mod echo;
+mod parser;
 mod pwd;
 mod syscmd;
 mod typecmd;
@@ -48,11 +49,13 @@ fn main() {
                 break;
             }
             potential_system_command => {
-                let potential_command: Vec<&str> = potential_system_command.split(" ").collect();
+                let parts: Vec<&str> = potential_system_command.splitn(2, " ").collect();
+                let cmd = parts[0];
+                let args_str = parts.get(1).unwrap_or(&"");
 
-                if is_cmd_exists_in_path_and_executable(potential_command[0]) {
-                    Command::new(potential_command[0])
-                        .args(&potential_command[1..])
+                if is_cmd_exists_in_path_and_executable(cmd) {
+                    Command::new(cmd)
+                        .args(command_input_parser(args_str))
                         .status()
                         .expect("Failed to execute command");
                 } else {
