@@ -13,6 +13,13 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
                 last_slash = None;
                 current_arg.push(character);
             }
+            ('\\', Some('"'), None) => {
+                last_slash = Some('\\');
+            }
+            ('\\', Some('"'), Some('\\')) => {
+                last_slash = None;
+                current_arg.push(character);
+            }
 
             ('"', None, slash) => {
                 if let Some(_) = slash {
@@ -22,7 +29,12 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
                 }
                 last_quote = Some('"');
             }
-            ('"', Some('"'), _) => {
+            ('"', Some('"'), slash) => {
+                if let Some(_) = slash {
+                    current_arg.push(character);
+                    last_slash = None;
+                    continue;
+                }
                 last_quote = None;
             }
             ('\'', Some('"'), _) => {
