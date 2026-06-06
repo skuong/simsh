@@ -5,6 +5,15 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
 
     for character in input.chars() {
         match (character, last_quote) {
+            ('"', None) => {
+                last_quote = Some('"');
+            }
+            ('"', Some('"')) => {
+                last_quote = None;
+            }
+            ('\'', Some('"')) => {
+                current_arg.push(character);
+            }
             ('\'', None) => {
                 last_quote = Some('\'');
             }
