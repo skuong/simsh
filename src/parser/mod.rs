@@ -1,7 +1,9 @@
 mod handle_back_slash;
 mod handle_double_quote;
+mod handle_single_quote;
 use handle_back_slash::handle_back_slash;
 use handle_double_quote::handle_double_quote;
+use handle_single_quote::handle_single_quote;
 
 pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
     let mut args = Vec::new();
@@ -18,6 +20,7 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
                 last_slash = slash;
                 current_arg = arg;
             }
+
             ('"', quote, slash) => {
                 let (quote, slash, arg) =
                     handle_double_quote(character, quote, slash, current_arg.clone());
@@ -26,20 +29,14 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
                 current_arg = arg;
             }
 
-            ('\'', Some('"'), _) => {
-                current_arg.push(character);
+            ('\'', quote, slash) => {
+                let (quote, slash, arg) =
+                    handle_single_quote(character, quote, slash, current_arg.clone());
+                last_quote = quote;
+                last_slash = slash;
+                current_arg = arg;
             }
-            ('\'', None, slash) => {
-                if let Some(_) = slash {
-                    current_arg.push(character);
-                    last_slash = None;
-                    continue;
-                }
-                last_quote = Some('\'');
-            }
-            ('\'', Some('\''), _) => {
-                last_quote = None;
-            }
+
             (char, None, slash) if char.is_whitespace() => {
                 if let Some(_) = slash {
                     current_arg.push(character);
