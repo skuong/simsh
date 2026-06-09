@@ -1,6 +1,9 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::process::Command;
+use std::{
+    fs::File,
+    process::{Command, Stdio},
+};
 
 use crate::syscmd::is_cmd_exists_in_path_and_executable;
 mod cd;
@@ -49,12 +52,23 @@ fn main() {
                 break;
             }
             potential_system_command => {
-                let args = parser::command_input_parser(command);
+                let (args, redirect_stdout_file_name) = parser::command_input_parser(command);
+
                 if is_cmd_exists_in_path_and_executable(&args[0]) {
-                    Command::new(&args[0])
-                        .args(&args[1..])
-                        .status()
-                        .expect("Failed to execute command");
+                    if !redirect_stdout_file_name.is_empty() {
+                        let output_file = File::create(redirect_stdout_file_name)
+                            .expect("Failed to create output file");
+                        Command::new(&args[0])
+                            .args(&args[1..])
+                            .stdout(Stdio::from(output_file))
+                            .status()
+                            .expect("Failed to execute command");
+                    } else {
+                        Command::new(&args[0])
+                            .args(&args[1..])
+                            .status()
+                            .expect("Failed to execute command");
+                    }
                 } else {
                     println!("{potential_system_command}: command not found");
                 }
