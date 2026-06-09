@@ -1,3 +1,6 @@
+mod handle_back_slash;
+use handle_back_slash::handle_back_slash;
+
 pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
     let mut args = Vec::new();
     let mut current_arg = String::new();
@@ -6,19 +9,12 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
 
     for character in input.chars() {
         match (character, last_quote, last_slash) {
-            ('\\', None, None) => {
-                last_slash = Some('\\');
-            }
-            ('\\', None, Some('\\')) => {
-                last_slash = None;
-                current_arg.push(character);
-            }
-            ('\\', Some('"'), None) => {
-                last_slash = Some('\\');
-            }
-            ('\\', Some('"'), Some('\\')) => {
-                last_slash = None;
-                current_arg.push(character);
+            ('\\', quote, slash) => {
+                let (quote, slash, arg) =
+                    handle_back_slash(character, quote, slash, current_arg.clone());
+                last_quote = quote;
+                last_slash = slash;
+                current_arg = arg;
             }
 
             ('"', None, slash) => {
