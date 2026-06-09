@@ -14,27 +14,18 @@ pub(crate) fn command_input_parser(input: &str) -> Vec<String> {
     for character in input.chars() {
         match (character, last_quote, last_slash) {
             ('\\', quote, slash) => {
-                let (quote, slash, arg) =
+                (last_quote, last_slash, current_arg) =
                     handle_back_slash(character, quote, slash, current_arg.clone());
-                last_quote = quote;
-                last_slash = slash;
-                current_arg = arg;
             }
 
             ('"', quote, slash) => {
-                let (quote, slash, arg) =
+                (last_quote, last_slash, current_arg) =
                     handle_double_quote(character, quote, slash, current_arg.clone());
-                last_quote = quote;
-                last_slash = slash;
-                current_arg = arg;
             }
 
             ('\'', quote, slash) => {
-                let (quote, slash, arg) =
+                (last_quote, last_slash, current_arg) =
                     handle_single_quote(character, quote, slash, current_arg.clone());
-                last_quote = quote;
-                last_slash = slash;
-                current_arg = arg;
             }
 
             (char, None, slash) if char.is_whitespace() => {
