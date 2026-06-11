@@ -1,12 +1,14 @@
+use std::collections::HashMap;
+
 use crate::{
     cd, complete, echo, parser, pwd,
     syscmd::{self, is_cmd_exists_in_path_and_executable},
     typecmd,
 };
 
-pub fn handle_line(line: String) -> bool {
+pub fn handle_line(line: String, registered_specs: &mut HashMap<String, String>) -> bool {
     if line.starts_with("complete ") {
-        complete::run(&line[9..]);
+        complete::run(&line[9..], registered_specs);
         return true;
     }
 

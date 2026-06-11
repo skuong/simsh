@@ -8,6 +8,8 @@ mod pwd;
 mod syscmd;
 mod typecmd;
 mod utils;
+use std::collections::HashMap;
+
 use rustyline::completion::FilenameCompleter;
 use rustyline::config::Configurer;
 use rustyline::error::ReadlineError;
@@ -22,11 +24,13 @@ fn main() -> Result<()> {
         file_completer: FilenameCompleter::new(),
     }));
 
+    let mut registered_specs = HashMap::<String, String>::new();
+
     loop {
         let readline = rl.readline("$ ");
         match readline {
             Ok(line) => {
-                let continue_reading = parser::handle_line(line);
+                let continue_reading = parser::handle_line(line, &mut registered_specs);
                 if !continue_reading {
                     break;
                 }
