@@ -7,6 +7,7 @@ mod parser;
 mod pwd;
 mod syscmd;
 mod typecmd;
+mod utils;
 
 fn main() {
     loop {
@@ -47,7 +48,7 @@ fn main() {
                 break;
             }
             potential_system_command => {
-                let (args, file_descriptor, redirect_file_name) =
+                let (args, file_descriptor, redirect_file_name, output_redirect_type) =
                     parser::command_input_parser(command);
 
                 if is_cmd_exists_in_path_and_executable(&args[0]) {
@@ -56,6 +57,7 @@ fn main() {
                         args[1..].to_vec(),
                         file_descriptor,
                         redirect_file_name,
+                        output_redirect_type,
                     );
 
                     continue;

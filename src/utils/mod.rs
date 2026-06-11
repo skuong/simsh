@@ -1,0 +1,2 @@
+mod create_a_file_to_redirect_output_to;
+pub(crate) use create_a_file_to_redirect_output_to::create_a_file_to_redirect_output_to;

@@ -7,12 +7,20 @@ use handle_double_quote::handle_double_quote;
 use handle_single_quote::handle_single_quote;
 use handle_whitespace::handle_whitespace;
 
+#[derive(Debug)]
 pub enum OutputRedirectType {
     Override,
     Append,
 }
 
-pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, String) {
+pub(crate) fn command_input_parser(
+    input: &str,
+) -> (
+    Vec<String>,
+    Option<char>,
+    String,
+    Option<OutputRedirectType>,
+) {
     let mut args = Vec::new();
     let mut redirect_file_name = String::new();
 
@@ -103,5 +111,5 @@ pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, S
         }
     }
 
-    (args, file_descriptor, redirect_file_name)
+    (args, file_descriptor, redirect_file_name, redirect)
 }

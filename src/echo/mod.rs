@@ -1,22 +1,29 @@
-use crate::parser::command_input_parser;
-use std::{fs::File, io::Write};
+use crate::{parser::command_input_parser, utils::create_a_file_to_redirect_output_to};
+use std::io::Write;
 
 pub(crate) fn run(message: &str) {
-    let (args, file_descriptor, redirect_file_name) = command_input_parser(message);
+    let (args, file_descriptor, redirect_file_name, output_redirect_type) =
+        command_input_parser(message);
+
     let output = args.join(" ");
 
-    if !redirect_file_name.is_empty() {
-        if file_descriptor == Some('2') {
-            File::create(&redirect_file_name).expect("Failed to create redirect file");
-            println!("{}", output);
-        } else if file_descriptor == Some('1') {
-            let mut file =
-                File::create(&redirect_file_name).expect("Failed to create redirect file");
+    if let Some(fd) = file_descriptor {
+        let mut output_file =
+            create_a_file_to_redirect_output_to(output_redirect_type, redirect_file_name)
+                .expect("Failed to open file");
 
-            file.write_all(output.as_bytes()).ok();
-            file.write_all(b"\n").ok();
+        match fd {
+            '1' => {
+                let _ = output_file.write_all(output.as_bytes());
+                let _ = output_file.write_all("\n".as_bytes());
+            }
+            '2' => {
+                let _ = output_file.write("".as_bytes());
+                println!("{output}");
+            }
+            _ => {}
         }
     } else {
-        println!("{}", output);
+        println!("{output}");
     }
 }
