@@ -1,1 +1,1 @@
-pub(crate) const BUILTIN_COMMANDS: &[&str] = &["cd", "echo", "exit", "pwd", "type"];
+pub(crate) const BUILTIN_COMMANDS: &[&str] = &["cd", "complete", "echo", "exit", "pwd", "type"];

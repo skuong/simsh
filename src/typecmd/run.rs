@@ -1,15 +1,14 @@
 use std::env;
 use std::path::Path;
 
+use crate::constant::BUILTIN_COMMANDS;
 use crate::syscmd::is_cmd_exists_and_executable;
 
 pub fn run(cmd: &str) {
     match cmd {
-        "echo" => println!("{} is a shell builtin", cmd),
-        "exit" => println!("{} is a shell builtin", cmd),
-        "type" => println!("{} is a shell builtin", cmd),
-        "pwd" => println!("{} is a shell builtin", cmd),
-        "cd" => println!("{} is a shell builtin", cmd),
+        builtin if BUILTIN_COMMANDS.iter().any(|cmd| *cmd == builtin) => {
+            println!("{} is a shell builtin", builtin)
+        }
         maybe_cmd => match env::var("PATH") {
             Ok(paths) => {
                 for path in paths.split(":") {
