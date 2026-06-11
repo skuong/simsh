@@ -1,10 +1,15 @@
 use crate::{
-    cd, echo, parser, pwd,
+    cd, complete, echo, parser, pwd,
     syscmd::{self, is_cmd_exists_in_path_and_executable},
     typecmd,
 };
 
 pub fn handle_line(line: String) -> bool {
+    if line.starts_with("complete ") {
+        complete::run(&line[9..]);
+        return true;
+    }
+
     if line.starts_with("echo ") {
         echo::run(&line[5..]);
         return true;

@@ -1,4 +1,5 @@
 mod cd;
+mod complete;
 mod completion;
 mod constant;
 mod echo;
