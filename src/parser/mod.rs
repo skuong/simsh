@@ -1,9 +1,11 @@
 mod handle_back_slash;
 mod handle_double_quote;
+mod handle_line;
 mod handle_single_quote;
 mod handle_whitespace;
 use handle_back_slash::handle_back_slash;
 use handle_double_quote::handle_double_quote;
+pub(crate) use handle_line::handle_line;
 use handle_single_quote::handle_single_quote;
 use handle_whitespace::handle_whitespace;
 
