@@ -7,13 +7,15 @@ mod pwd;
 mod syscmd;
 mod typecmd;
 mod utils;
+use rustyline::config::Configurer;
 use rustyline::error::ReadlineError;
-use rustyline::{Editor, Result};
+use rustyline::{CompletionType, Editor, Result};
 
 use crate::completion::CompletionHelper;
 
 fn main() -> Result<()> {
     let mut rl = Editor::new()?;
+    rl.set_completion_type(CompletionType::List);
     rl.set_helper(Some(CompletionHelper));
 
     loop {
