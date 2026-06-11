@@ -7,6 +7,11 @@ use handle_double_quote::handle_double_quote;
 use handle_single_quote::handle_single_quote;
 use handle_whitespace::handle_whitespace;
 
+pub enum OutputRedirectType {
+    Override,
+    Append,
+}
+
 pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, String) {
     let mut args = Vec::new();
     let mut redirect_file_name = String::new();
@@ -17,7 +22,7 @@ pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, S
 
     let mut file_descriptor = None;
     let mut is_last_whitespace = false;
-    let mut is_redirect = false;
+    let mut redirect = None;
 
     for character in input.chars() {
         match (character, last_quote, last_slash) {
@@ -42,14 +47,21 @@ pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, S
                 } else {
                     current_arg.push(fd);
                 }
+
+                is_last_whitespace = false
             }
 
             ('>', None, None) => {
                 if let Some(_) = file_descriptor {
-                    is_redirect = true;
+                    if let Some(_) = redirect {
+                        redirect = Some(OutputRedirectType::Append);
+                    } else {
+                        redirect = Some(OutputRedirectType::Override);
+                    }
                 } else if is_last_whitespace {
-                    is_redirect = true;
+                    redirect = Some(OutputRedirectType::Override);
                     file_descriptor = Some('1');
+                    is_last_whitespace = false
                 }
             }
 
@@ -61,7 +73,7 @@ pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, S
                 last_slash = slash;
 
                 if arg.is_empty() && !current_arg.is_empty() {
-                    if is_redirect {
+                    if let Some(_) = redirect {
                         redirect_file_name = current_arg;
                     } else {
                         args.push(current_arg);
@@ -84,7 +96,7 @@ pub(crate) fn command_input_parser(input: &str) -> (Vec<String>, Option<char>, S
     }
 
     if !current_arg.is_empty() {
-        if is_redirect {
+        if let Some(_) = redirect {
             redirect_file_name = current_arg;
         } else {
             args.push(current_arg);
