@@ -1,3 +1,6 @@
+use std::env;
+use std::path::Path;
+
 use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::error::ReadlineError;
 use rustyline::highlight::Highlighter;
@@ -46,9 +49,19 @@ impl Completer for CompletionHelper {
                         position,
                         pairs
                             .iter()
-                            .map(|pair| Pair {
-                                display: pair.display.clone(),
-                                replacement: format!("{} ", pair.replacement),
+                            .map(|pair| {
+                                let cwd = env::current_dir().unwrap();
+                                let replacement_path = Path::new(&pair.replacement);
+                                let is_dir = cwd.join(replacement_path).is_dir();
+
+                                Pair {
+                                    display: pair.display.clone(),
+                                    replacement: format!(
+                                        "{}{}",
+                                        pair.replacement,
+                                        if !is_dir { " " } else { "" }
+                                    ),
+                                }
                             })
                             .collect(),
                     )
