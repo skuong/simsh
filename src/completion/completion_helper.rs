@@ -1,5 +1,8 @@
+use std::collections::HashMap;
 use std::env;
+use std::io::{BufRead, BufReader};
 use std::path::Path;
+use std::process::{Command, Stdio};
 
 use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::error::ReadlineError;
@@ -13,6 +16,7 @@ use crate::constant::BUILTIN_COMMANDS;
 
 pub struct CompletionHelper {
     pub file_completer: FilenameCompleter,
+    pub registered_specs: HashMap<String, String>,
 }
 
 impl Completer for CompletionHelper {
@@ -24,6 +28,37 @@ impl Completer for CompletionHelper {
         pos: usize,
         _ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>), ReadlineError> {
+        if let Some(path) = self.registered_specs.get(line.trim()) {
+            let mut child = Command::new(path)
+                .stdout(Stdio::piped())
+                .spawn()
+                .expect("Failed to execute completion script");
+
+            let mut completions: Vec<String> = vec![];
+
+            if let Some(stdout) = child.stdout.take() {
+                let reader = BufReader::new(stdout);
+                for line in reader.lines() {
+                    if let Ok(completion) = line {
+                        completions.push(completion);
+                    }
+                }
+            }
+
+            if completions.len() > 0 {
+                return Ok((
+                    pos,
+                    completions
+                        .iter()
+                        .map(|completion| Pair {
+                            display: completion.clone(),
+                            replacement: format!("{} ", completion.clone()),
+                        })
+                        .collect(),
+                ));
+            }
+        };
+
         let matches: Vec<Pair> = BUILTIN_COMMANDS
             .iter()
             .filter(|cmd| cmd.starts_with(&line[..pos]))

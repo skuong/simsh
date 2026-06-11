@@ -22,15 +22,17 @@ fn main() -> Result<()> {
     rl.set_completion_type(CompletionType::List);
     rl.set_helper(Some(CompletionHelper {
         file_completer: FilenameCompleter::new(),
+        registered_specs: HashMap::<String, String>::new(),
     }));
-
-    let mut registered_specs = HashMap::<String, String>::new();
 
     loop {
         let readline = rl.readline("$ ");
+
         match readline {
             Ok(line) => {
-                let continue_reading = parser::handle_line(line, &mut registered_specs);
+                let completion_helper = rl.helper_mut().expect("Failed to get registered specs");
+                let continue_reading =
+                    parser::handle_line(line, &mut completion_helper.registered_specs);
                 if !continue_reading {
                     break;
                 }
