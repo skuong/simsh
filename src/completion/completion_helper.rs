@@ -5,6 +5,7 @@ use rustyline::hint::Hinter;
 use rustyline::validate::Validator;
 use rustyline::{Context, Helper};
 
+use crate::completion::find_command_in_path_matches_prefix;
 use crate::constant::BUILTIN_COMMANDS;
 
 pub struct CompletionHelper;
@@ -18,7 +19,7 @@ impl Completer for CompletionHelper {
         pos: usize,
         _ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>), ReadlineError> {
-        let matches = BUILTIN_COMMANDS
+        let matches: Vec<Pair> = BUILTIN_COMMANDS
             .iter()
             .filter(|cmd| cmd.starts_with(&line[..pos]))
             .map(|cmd| Pair {
@@ -27,7 +28,11 @@ impl Completer for CompletionHelper {
             })
             .collect();
 
-        Ok((0, matches))
+        if matches.len() > 0 {
+            return Ok((0, matches));
+        }
+
+        Ok((0, find_command_in_path_matches_prefix(line)))
     }
 }
 
