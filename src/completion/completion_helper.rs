@@ -1,4 +1,4 @@
-use rustyline::completion::{Completer, Pair};
+use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::error::ReadlineError;
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
@@ -8,7 +8,9 @@ use rustyline::{Context, Helper};
 use crate::completion::find_command_in_path_matches_prefix;
 use crate::constant::BUILTIN_COMMANDS;
 
-pub struct CompletionHelper;
+pub struct CompletionHelper {
+    pub file_completer: FilenameCompleter,
+}
 
 impl Completer for CompletionHelper {
     type Candidate = Pair;
@@ -31,8 +33,28 @@ impl Completer for CompletionHelper {
         if matches.len() > 0 {
             return Ok((0, matches));
         }
+        let syscmd_matches = find_command_in_path_matches_prefix(line);
+        if syscmd_matches.len() > 0 {
+            return Ok((0, syscmd_matches));
+        }
 
-        Ok((0, find_command_in_path_matches_prefix(line)))
+        let file_completion =
+            self.file_completer
+                .complete_path(line, pos)
+                .map(|(position, pairs)| {
+                    (
+                        position,
+                        pairs
+                            .iter()
+                            .map(|pair| Pair {
+                                display: pair.display.clone(),
+                                replacement: format!("{} ", pair.replacement),
+                            })
+                            .collect(),
+                    )
+                });
+
+        file_completion
     }
 }
 
