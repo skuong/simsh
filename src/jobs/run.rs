@@ -9,7 +9,7 @@ pub fn run(_input: &str, jobs: &mut BTreeMap<usize, Job>) {
     let len = jobs.len();
     let mut done_jobs: Vec<usize> = vec![];
 
-    for kv in jobs.iter_mut() {
+    for (i, kv) in jobs.iter_mut().enumerate() {
         let job = kv.1;
 
         match waitpid(Pid::from_raw(job.pid as i32), Some(WaitPidFlag::WNOHANG)) {
@@ -26,9 +26,9 @@ pub fn run(_input: &str, jobs: &mut BTreeMap<usize, Job>) {
 
         let padded_status = format!("{:24}", job.status);
 
-        let marker = if *kv.0 == len {
+        let marker = if i == len - 1 {
             '+'
-        } else if *kv.0 == len - 1 {
+        } else if i == len - 2 {
             '-'
         } else {
             ' '
