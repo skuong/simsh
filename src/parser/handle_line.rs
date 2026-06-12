@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::{
     Job, cd, complete, echo, jobs, parser, pwd,
@@ -9,15 +9,13 @@ use crate::{
 pub(crate) struct HandleLineParams<'a> {
     pub(crate) line: String,
     pub(crate) registered_specs: &'a mut HashMap<String, String>,
-    pub(crate) job_incremental_id: &'a mut u32,
-    pub(crate) jobs: &'a mut HashMap<u32, Job>,
+    pub(crate) jobs: &'a mut BTreeMap<usize, Job>,
 }
 
 pub fn handle_line(
     HandleLineParams {
         line,
         registered_specs,
-        job_incremental_id,
         jobs,
     }: HandleLineParams,
 ) -> bool {
@@ -65,10 +63,10 @@ pub fn handle_line(
                 if let Some(job) = syscmd::handle_system_command(parser_output) {
                     let pid = job.pid;
 
-                    *job_incremental_id = *job_incremental_id + 1u32;
-                    jobs.insert(*job_incremental_id, job);
+                    let job_number = jobs.len() + 1;
+                    jobs.insert(job_number, job);
 
-                    println!("[{}] {}", *job_incremental_id, pid);
+                    println!("[{}] {}", job_number, pid);
                 }
 
                 return true;

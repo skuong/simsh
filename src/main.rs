@@ -9,7 +9,7 @@ mod pwd;
 mod syscmd;
 mod typecmd;
 mod utils;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use parser::HandleLineParams;
 use rustyline::completion::FilenameCompleter;
@@ -33,8 +33,7 @@ fn main() -> Result<()> {
         registered_specs: HashMap::<String, String>::new(),
     }));
 
-    let mut job_incremental_id = 0u32;
-    let mut jobs = HashMap::<u32, Job>::new();
+    let mut jobs = BTreeMap::<usize, Job>::new();
 
     loop {
         let readline = rl.readline("$ ");
@@ -45,7 +44,6 @@ fn main() -> Result<()> {
                 let continue_reading = parser::handle_line(HandleLineParams {
                     line,
                     registered_specs: &mut completion_helper.registered_specs,
-                    job_incremental_id: &mut job_incremental_id,
                     jobs: &mut jobs,
                 });
                 if !continue_reading {

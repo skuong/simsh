@@ -1,11 +1,23 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::Job;
 
-pub fn run(_input: &str, jobs: &HashMap<u32, Job>) {
+pub fn run(_input: &str, jobs: &BTreeMap<usize, Job>) {
+    let len = jobs.len();
+
     for kv in jobs {
         let job = kv.1;
+
         let padded_status = format!("{:24}", job.status);
-        println!("[{}]+  {}{}", kv.0, padded_status, job.command);
+
+        let marker = if *kv.0 == len {
+            '+'
+        } else if *kv.0 == len - 1 {
+            '-'
+        } else {
+            ' '
+        };
+
+        println!("[{}]{marker}  {padded_status}{}", kv.0, job.command,);
     }
 }
