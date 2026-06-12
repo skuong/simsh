@@ -18,6 +18,10 @@ pub fn run(input: &str, registered_specs: &mut HashMap<String, String>) {
         "-C" => {
             registered_specs.insert(args[2].clone(), args[1].clone());
         }
+        "-r" => {
+            let command = args[1].clone();
+            registered_specs.remove(&command);
+        }
         _ => {}
     };
 }
