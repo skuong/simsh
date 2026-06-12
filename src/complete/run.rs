@@ -2,7 +2,7 @@ use crate::parser;
 use std::collections::HashMap;
 
 pub fn run(input: &str, registered_specs: &mut HashMap<String, String>) {
-    let args = parser::command_input_parser(input).0;
+    let args = parser::command_input_parser(input).args;
 
     match args[0].as_str() {
         "-p" => {

@@ -1,16 +1,17 @@
 use crate::{parser::command_input_parser, utils::create_a_file_to_redirect_output_to};
 use std::io::Write;
 
-pub(crate) fn run(message: &str) {
-    let (args, file_descriptor, redirect_file_name, output_redirect_type) =
-        command_input_parser(message);
+pub(crate) fn run(input: &str) {
+    let parsed_input = command_input_parser(input);
 
-    let output = args.join(" ");
+    let output = parsed_input.args.join(" ");
 
-    if let Some(fd) = file_descriptor {
-        let mut output_file =
-            create_a_file_to_redirect_output_to(output_redirect_type, redirect_file_name)
-                .expect("Failed to open file");
+    if let Some(fd) = parsed_input.file_descriptor {
+        let mut output_file = create_a_file_to_redirect_output_to(
+            parsed_input.write_type,
+            parsed_input.redirect_filename,
+        )
+        .expect("Failed to open file");
 
         match fd {
             '1' => {

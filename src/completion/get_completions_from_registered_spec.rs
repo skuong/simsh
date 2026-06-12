@@ -10,7 +10,7 @@ pub fn get_completions_from_registered_spec(
     pos: usize,
     path: &String,
 ) -> Option<(usize, Vec<Pair>)> {
-    let args = parser::command_input_parser(line).0;
+    let args = parser::command_input_parser(line).args;
 
     let command = args[0].clone();
     let mut subcommand = String::new();

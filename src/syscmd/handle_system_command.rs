@@ -1,17 +1,14 @@
 use std::process::{Command, Stdio};
 
-use crate::{parser::OutputRedirectType, utils::create_a_file_to_redirect_output_to};
+use crate::{parser::CommandParserOutput, utils::create_a_file_to_redirect_output_to};
 
-pub fn handle_system_command(
-    cmd: &String,
-    args: Vec<String>,
-    file_descriptor: Option<char>,
-    redirect_file_name: String,
-    output_redirect_type: Option<OutputRedirectType>,
-) {
-    if let Some(fd) = file_descriptor {
+pub fn handle_system_command(params: CommandParserOutput) {
+    let cmd = &params.args[0];
+    let args = params.args[1..].to_vec();
+
+    if let Some(fd) = params.file_descriptor {
         let output_file =
-            create_a_file_to_redirect_output_to(output_redirect_type, redirect_file_name)
+            create_a_file_to_redirect_output_to(params.write_type, params.redirect_filename)
                 .expect("Failed to open file");
 
         let mut command = Command::new(cmd);

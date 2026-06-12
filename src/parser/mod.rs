@@ -15,16 +15,18 @@ pub enum OutputRedirectType {
     Append,
 }
 
-pub(crate) fn command_input_parser(
-    input: &str,
-) -> (
-    Vec<String>,
-    Option<char>,
-    String,
-    Option<OutputRedirectType>,
-) {
+#[derive(Debug)]
+pub(crate) struct CommandParserOutput {
+    pub(crate) args: Vec<String>,
+    pub(crate) file_descriptor: Option<char>,
+    pub(crate) redirect_filename: String,
+    pub(crate) write_type: Option<OutputRedirectType>,
+    pub(crate) is_background: bool,
+}
+
+pub(crate) fn command_input_parser(input: &str) -> CommandParserOutput {
     let mut args = Vec::new();
-    let mut redirect_file_name = String::new();
+    let mut redirect_filename = String::new();
 
     let mut current_arg = String::new();
     let mut last_quote = None;
@@ -32,7 +34,7 @@ pub(crate) fn command_input_parser(
 
     let mut file_descriptor = None;
     let mut is_last_whitespace = false;
-    let mut redirect = None;
+    let mut write_type = None;
 
     for character in input.chars() {
         match (character, last_quote, last_slash) {
@@ -63,13 +65,13 @@ pub(crate) fn command_input_parser(
 
             ('>', None, None) => {
                 if let Some(_) = file_descriptor {
-                    if let Some(_) = redirect {
-                        redirect = Some(OutputRedirectType::Append);
+                    if let Some(_) = write_type {
+                        write_type = Some(OutputRedirectType::Append);
                     } else {
-                        redirect = Some(OutputRedirectType::Override);
+                        write_type = Some(OutputRedirectType::Override);
                     }
                 } else if is_last_whitespace {
-                    redirect = Some(OutputRedirectType::Override);
+                    write_type = Some(OutputRedirectType::Override);
                     file_descriptor = Some('1');
                     is_last_whitespace = false
                 }
@@ -83,8 +85,8 @@ pub(crate) fn command_input_parser(
                 last_slash = slash;
 
                 if arg.is_empty() && !current_arg.is_empty() {
-                    if let Some(_) = redirect {
-                        redirect_file_name = current_arg;
+                    if let Some(_) = write_type {
+                        redirect_filename = current_arg;
                     } else {
                         args.push(current_arg);
                     }
@@ -106,12 +108,24 @@ pub(crate) fn command_input_parser(
     }
 
     if !current_arg.is_empty() {
-        if let Some(_) = redirect {
-            redirect_file_name = current_arg;
+        if let Some(_) = write_type {
+            redirect_filename = current_arg;
         } else {
             args.push(current_arg);
         }
     }
 
-    (args, file_descriptor, redirect_file_name, redirect)
+    let mut is_background = false;
+    if args[args.len() - 1] == "&" {
+        is_background = true;
+        args.pop();
+    }
+
+    CommandParserOutput {
+        args,
+        file_descriptor,
+        redirect_filename,
+        write_type,
+        is_background,
+    }
 }

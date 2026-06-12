@@ -45,17 +45,10 @@ pub fn handle_line(line: String, registered_specs: &mut HashMap<String, String>)
             return false;
         }
         potential_system_command => {
-            let (args, file_descriptor, redirect_file_name, output_redirect_type) =
-                parser::command_input_parser(&line);
+            let parser_output = parser::command_input_parser(&line);
 
-            if is_cmd_exists_in_path_and_executable(&args[0]) {
-                syscmd::handle_system_command(
-                    &args[0],
-                    args[1..].to_vec(),
-                    file_descriptor,
-                    redirect_file_name,
-                    output_redirect_type,
-                );
+            if is_cmd_exists_in_path_and_executable(&parser_output.args[0]) {
+                syscmd::handle_system_command(parser_output);
 
                 return true;
             }
