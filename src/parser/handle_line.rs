@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    cd, complete, echo, jobs, parser, pwd,
+    Job, cd, complete, echo, jobs, parser, pwd,
     syscmd::{self, is_cmd_exists_in_path_and_executable},
     typecmd,
 };
@@ -10,7 +10,7 @@ pub(crate) struct HandleLineParams<'a> {
     pub(crate) line: String,
     pub(crate) registered_specs: &'a mut HashMap<String, String>,
     pub(crate) job_incremental_id: &'a mut u32,
-    pub(crate) jobs: &'a mut HashMap<u32, u32>,
+    pub(crate) jobs: &'a mut HashMap<u32, Job>,
 }
 
 pub fn handle_line(
@@ -32,7 +32,7 @@ pub fn handle_line(
     }
 
     if line.starts_with("jobs") {
-        jobs::run(&line[4..]);
+        jobs::run(&line[4..], &jobs);
         return true;
     }
 
@@ -62,9 +62,12 @@ pub fn handle_line(
             let parser_output = parser::command_input_parser(&line);
 
             if is_cmd_exists_in_path_and_executable(&parser_output.args[0]) {
-                if let Some(pid) = syscmd::handle_system_command(parser_output) {
+                if let Some(job) = syscmd::handle_system_command(parser_output) {
+                    let pid = job.pid;
+
                     *job_incremental_id = *job_incremental_id + 1u32;
-                    jobs.insert(*job_incremental_id, pid);
+                    jobs.insert(*job_incremental_id, job);
+
                     println!("[{}] {}", *job_incremental_id, pid);
                 }
 

@@ -19,6 +19,12 @@ use rustyline::{CompletionType, Editor, Result};
 
 use crate::completion::CompletionHelper;
 
+pub(crate) struct Job {
+    pub(crate) pid: u32,
+    pub(crate) command: String,
+    pub(crate) status: String,
+}
+
 fn main() -> Result<()> {
     let mut rl = Editor::new()?;
     rl.set_completion_type(CompletionType::List);
@@ -28,7 +34,7 @@ fn main() -> Result<()> {
     }));
 
     let mut job_incremental_id = 0u32;
-    let mut jobs = HashMap::<u32, u32>::new();
+    let mut jobs = HashMap::<u32, Job>::new();
 
     loop {
         let readline = rl.readline("$ ");
