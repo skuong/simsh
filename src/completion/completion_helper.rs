@@ -1,18 +1,15 @@
-use std::collections::HashMap;
-use std::env;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
-use std::process::{Command, Stdio};
-
 use rustyline::completion::{Completer, FilenameCompleter, Pair};
 use rustyline::error::ReadlineError;
 use rustyline::highlight::Highlighter;
 use rustyline::hint::Hinter;
 use rustyline::validate::Validator;
 use rustyline::{Context, Helper};
+use std::collections::HashMap;
 
-use crate::completion::find_command_in_path_matches_prefix;
-use crate::constant::BUILTIN_COMMANDS;
+use crate::completion::{
+    find_command_in_path_matches_prefix, get_builtin_command_completions,
+    get_completions_from_registered_spec, get_file_completions,
+};
 
 pub struct CompletionHelper {
     pub file_completer: FilenameCompleter,
@@ -29,85 +26,22 @@ impl Completer for CompletionHelper {
         _ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>), ReadlineError> {
         if let Some(path) = self.registered_specs.get(line.trim()) {
-            let mut child = Command::new(path)
-                .stdout(Stdio::piped())
-                .spawn()
-                .expect("Failed to execute completion script");
-
-            let mut completions: Vec<String> = vec![];
-
-            if let Some(stdout) = child.stdout.take() {
-                let reader = BufReader::new(stdout);
-                for line in reader.lines() {
-                    if let Ok(completion) = line {
-                        completions.push(completion);
-                    }
-                }
-            }
-
-            if completions.len() > 0 {
-                return Ok((
-                    pos,
-                    completions
-                        .iter()
-                        .map(|completion| Pair {
-                            display: completion.clone(),
-                            replacement: format!("{} ", completion.clone()),
-                        })
-                        .collect(),
-                ));
+            if let Some(pairs) = get_completions_from_registered_spec(path) {
+                return Ok((pos, pairs));
             }
         };
 
-        let matches: Vec<Pair> = BUILTIN_COMMANDS
-            .iter()
-            .filter(|cmd| cmd.starts_with(&line[..pos]))
-            .map(|cmd| Pair {
-                display: cmd.to_string(),
-                replacement: format!("{cmd} "),
-            })
-            .collect();
-
-        if matches.len() > 0 {
-            return Ok((0, matches));
+        let builtin_commands = get_builtin_command_completions(line, pos);
+        if let Some(pairs) = builtin_commands {
+            return Ok((0, pairs));
         }
+
         let syscmd_matches = find_command_in_path_matches_prefix(line);
         if syscmd_matches.len() > 0 {
             return Ok((0, syscmd_matches));
         }
 
-        let file_completion =
-            self.file_completer
-                .complete_path(line, pos)
-                .map(|(position, pairs)| {
-                    let mut new_pairs: Vec<Pair> = pairs
-                        .iter()
-                        .map(|pair| {
-                            let cwd = env::current_dir().unwrap();
-                            let replacement_path = Path::new(&pair.replacement);
-                            let is_dir = cwd.join(replacement_path).is_dir();
-
-                            Pair {
-                                display: format!(
-                                    "{}{}",
-                                    pair.display.clone(),
-                                    if !is_dir { "" } else { "/" }
-                                ),
-                                replacement: format!(
-                                    "{}{}",
-                                    pair.replacement,
-                                    if !is_dir { " " } else { "" }
-                                ),
-                            }
-                        })
-                        .collect();
-
-                    new_pairs.sort_by_key(|pair| pair.replacement.clone());
-
-                    (position, new_pairs)
-                });
-
-        file_completion
+        get_file_completions(&self.file_completer, line, pos)
     }
 }
 
