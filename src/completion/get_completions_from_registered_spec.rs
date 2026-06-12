@@ -25,6 +25,9 @@ pub fn get_completions_from_registered_spec(
         prefix = args[2].clone();
     } else if args.len() == 2 {
         prefix = args[1].clone();
+        subcommand = command.clone();
+    } else {
+        subcommand = command.clone();
     }
 
     let is_line_ends_with_space = line.ends_with(" ");
