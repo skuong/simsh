@@ -23,6 +23,7 @@ pub(crate) struct Job {
     pub(crate) pid: u32,
     pub(crate) command: String,
     pub(crate) status: String,
+    pub(crate) exit_code: Option<i32>,
 }
 
 fn main() -> Result<()> {

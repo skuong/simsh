@@ -26,6 +26,7 @@ pub fn handle_system_command(params: CommandParserOutput) -> Option<Job> {
                         pid,
                         command: params.args.join(" "),
                         status: "Running".to_string(),
+                        exit_code: None,
                     });
                 }
 
@@ -40,6 +41,7 @@ pub fn handle_system_command(params: CommandParserOutput) -> Option<Job> {
                         pid,
                         command: params.args.join(" "),
                         status: "Running".to_string(),
+                        exit_code: None,
                     });
                 }
 
@@ -58,6 +60,7 @@ pub fn handle_system_command(params: CommandParserOutput) -> Option<Job> {
                 pid,
                 command: params.args.join(" "),
                 status: "Running".to_string(),
+                exit_code: None,
             });
         }
 

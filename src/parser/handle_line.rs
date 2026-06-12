@@ -30,7 +30,7 @@ pub fn handle_line(
     }
 
     if line.starts_with("jobs") {
-        jobs::run(&line[4..], &jobs);
+        jobs::run(&line[4..], jobs);
         return true;
     }
 
