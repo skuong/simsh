@@ -1,4 +1,5 @@
 use rustyline::completion::Pair;
+use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
 
@@ -27,8 +28,12 @@ pub fn get_completions_from_registered_spec(
     }
 
     let is_line_ends_with_space = line.ends_with(" ");
+    let mut vars = HashMap::<String, String>::new();
+    vars.insert("COMP_LINE".to_string(), line.to_string());
+    vars.insert("COMP_POINT".to_string(), pos.to_string());
 
     let mut child = Command::new(path)
+        .envs(vars)
         .args(vec![command, prefix.clone(), subcommand])
         .stdout(Stdio::piped())
         .spawn()
@@ -38,7 +43,6 @@ pub fn get_completions_from_registered_spec(
 
     if let Some(stdout) = child.stdout.take() {
         let reader = BufReader::new(stdout);
-        // println!("prefix:===={}====", prefix);
         for line_from_reader in reader.lines() {
             if let Ok(completion) = line_from_reader
                 && completion.starts_with(prefix.as_str())
