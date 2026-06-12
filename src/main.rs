@@ -11,6 +11,7 @@ mod typecmd;
 mod utils;
 use std::collections::HashMap;
 
+use parser::HandleLineParams;
 use rustyline::completion::FilenameCompleter;
 use rustyline::config::Configurer;
 use rustyline::error::ReadlineError;
@@ -26,14 +27,21 @@ fn main() -> Result<()> {
         registered_specs: HashMap::<String, String>::new(),
     }));
 
+    let mut job_incremental_id = 0u32;
+    let mut jobs = HashMap::<u32, u32>::new();
+
     loop {
         let readline = rl.readline("$ ");
 
         match readline {
             Ok(line) => {
                 let completion_helper = rl.helper_mut().expect("Failed to get registered specs");
-                let continue_reading =
-                    parser::handle_line(line, &mut completion_helper.registered_specs);
+                let continue_reading = parser::handle_line(HandleLineParams {
+                    line,
+                    registered_specs: &mut completion_helper.registered_specs,
+                    job_incremental_id: &mut job_incremental_id,
+                    jobs: &mut jobs,
+                });
                 if !continue_reading {
                     break;
                 }

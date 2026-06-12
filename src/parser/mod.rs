@@ -5,12 +5,15 @@ mod handle_single_quote;
 mod handle_whitespace;
 use handle_back_slash::handle_back_slash;
 use handle_double_quote::handle_double_quote;
+pub(crate) use handle_line::HandleLineParams;
 pub(crate) use handle_line::handle_line;
 use handle_single_quote::handle_single_quote;
 use handle_whitespace::handle_whitespace;
 
+use crate::parser::handle_whitespace::HandleWhitespaceParams;
+
 #[derive(Debug)]
-pub enum OutputRedirectType {
+pub(crate) enum OutputRedirectType {
     Override,
     Append,
 }
@@ -36,7 +39,9 @@ pub(crate) fn command_input_parser(input: &str) -> CommandParserOutput {
     let mut is_last_whitespace = false;
     let mut write_type = None;
 
-    for character in input.chars() {
+    let mut input = input.chars().peekable();
+
+    while let Some(character) = input.next() {
         match (character, last_quote, last_slash) {
             ('\\', quote, slash) => {
                 (last_quote, last_slash, current_arg) =
@@ -54,7 +59,7 @@ pub(crate) fn command_input_parser(input: &str) -> CommandParserOutput {
             }
 
             (fd, None, None) if fd == '1' || fd == '2' => {
-                if is_last_whitespace {
+                if is_last_whitespace && input.peek() == Some(&'>') {
                     file_descriptor = Some(fd);
                 } else {
                     current_arg.push(fd);
@@ -77,25 +82,18 @@ pub(crate) fn command_input_parser(input: &str) -> CommandParserOutput {
                 }
             }
 
-            (char, quote, slash) if char.is_whitespace() => {
-                let (quote, slash, arg) =
-                    handle_whitespace(character, quote, slash, current_arg.clone());
+            (char, quote, _) if char.is_whitespace() => {
+                handle_whitespace(HandleWhitespaceParams {
+                    character,
+                    quote,
+                    slash: &mut last_slash,
+                    current_arg: &mut current_arg,
+                    redirect_filename: &mut redirect_filename,
+                    write_type: &mut write_type,
+                    args: &mut args,
+                });
 
-                last_quote = quote;
-                last_slash = slash;
-
-                if arg.is_empty() && !current_arg.is_empty() {
-                    if let Some(_) = write_type {
-                        redirect_filename = current_arg;
-                    } else {
-                        args.push(current_arg);
-                    }
-                    current_arg = String::new();
-                } else {
-                    current_arg = arg;
-                }
-
-                is_last_whitespace = true
+                is_last_whitespace = true;
             }
 
             (char, _, _) => {
@@ -108,7 +106,9 @@ pub(crate) fn command_input_parser(input: &str) -> CommandParserOutput {
     }
 
     if !current_arg.is_empty() {
-        if let Some(_) = write_type {
+        if let Some(_) = write_type
+            && redirect_filename.is_empty()
+        {
             redirect_filename = current_arg;
         } else {
             args.push(current_arg);

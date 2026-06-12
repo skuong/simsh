@@ -1,21 +1,43 @@
+use crate::parser::OutputRedirectType;
+
+pub(crate) struct HandleWhitespaceParams<'a> {
+    pub(crate) character: char,
+    pub(crate) quote: Option<char>,
+    pub(crate) slash: &'a mut Option<char>,
+    pub(crate) current_arg: &'a mut String,
+    pub(crate) redirect_filename: &'a mut String,
+    pub(crate) write_type: &'a mut Option<OutputRedirectType>,
+    pub(crate) args: &'a mut Vec<String>,
+}
+
 pub fn handle_whitespace(
-    character: char,
-    quote: Option<char>,
-    slash: Option<char>,
-    arg: String,
-) -> (Option<char>, Option<char>, String) {
-    let mut slash = slash;
-    let mut arg = arg;
-
+    HandleWhitespaceParams {
+        character,
+        quote,
+        slash,
+        current_arg,
+        redirect_filename,
+        write_type,
+        args,
+    }: HandleWhitespaceParams,
+) {
     if let Some(_) = quote {
-        arg.push(character);
-        slash = None;
+        current_arg.push(character);
+        *slash = None;
     } else if let Some(_) = slash {
-        arg.push(character);
-        slash = None;
+        current_arg.push(character);
+        *slash = None;
     } else {
-        arg = String::new();
-    }
+        if let Some(_) = write_type
+            && redirect_filename.is_empty()
+        {
+            *redirect_filename = current_arg.clone();
+        } else {
+            if !current_arg.is_empty() {
+                args.push(current_arg.clone());
+            }
+        }
 
-    (quote, slash, arg)
+        *current_arg = String::new();
+    }
 }

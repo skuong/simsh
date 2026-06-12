@@ -6,7 +6,21 @@ use crate::{
     typecmd,
 };
 
-pub fn handle_line(line: String, registered_specs: &mut HashMap<String, String>) -> bool {
+pub(crate) struct HandleLineParams<'a> {
+    pub(crate) line: String,
+    pub(crate) registered_specs: &'a mut HashMap<String, String>,
+    pub(crate) job_incremental_id: &'a mut u32,
+    pub(crate) jobs: &'a mut HashMap<u32, u32>,
+}
+
+pub fn handle_line(
+    HandleLineParams {
+        line,
+        registered_specs,
+        job_incremental_id,
+        jobs,
+    }: HandleLineParams,
+) -> bool {
     if line.starts_with("complete ") {
         complete::run(&line[9..], registered_specs);
         return true;
@@ -48,7 +62,11 @@ pub fn handle_line(line: String, registered_specs: &mut HashMap<String, String>)
             let parser_output = parser::command_input_parser(&line);
 
             if is_cmd_exists_in_path_and_executable(&parser_output.args[0]) {
-                syscmd::handle_system_command(parser_output);
+                if let Some(pid) = syscmd::handle_system_command(parser_output) {
+                    *job_incremental_id = *job_incremental_id + 1u32;
+                    jobs.insert(*job_incremental_id, pid);
+                    println!("[{}] {}", *job_incremental_id, pid);
+                }
 
                 return true;
             }
