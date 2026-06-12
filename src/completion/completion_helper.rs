@@ -10,7 +10,6 @@ use crate::completion::{
     find_command_in_path_matches_prefix, get_builtin_command_completions,
     get_completions_from_registered_spec, get_file_completions,
 };
-use crate::parser;
 
 pub struct CompletionHelper {
     pub file_completer: FilenameCompleter,
@@ -26,28 +25,29 @@ impl Completer for CompletionHelper {
         pos: usize,
         _ctx: &Context<'_>,
     ) -> Result<(usize, Vec<Pair>), ReadlineError> {
-        let args = parser::command_input_parser(line).0;
-        let command = args[0].clone();
+        let command = line.splitn(2, " ").collect::<Vec<&str>>();
 
-        if let Some(path) = self.registered_specs.get(&command) {
-            if let Some((pos, pairs)) = get_completions_from_registered_spec(args, pos, path) {
+        if let Some(path) = self.registered_specs.get(command[0])
+            && command.len() > 1
+        {
+            if let Some((pos, pairs)) = get_completions_from_registered_spec(line, pos, path) {
                 return Ok((pos, pairs));
             } else {
                 return Ok((pos, vec![]));
             }
         };
 
-        let builtin_commands = get_builtin_command_completions(command.as_str(), pos);
+        let builtin_commands = get_builtin_command_completions(line, pos);
         if let Some(pairs) = builtin_commands {
             return Ok((0, pairs));
         }
 
-        let syscmd_matches = find_command_in_path_matches_prefix(command.as_str());
+        let syscmd_matches = find_command_in_path_matches_prefix(line);
         if syscmd_matches.len() > 0 {
             return Ok((0, syscmd_matches));
         }
 
-        get_file_completions(&self.file_completer, command.as_str(), pos)
+        get_file_completions(&self.file_completer, line, pos)
     }
 }
 
