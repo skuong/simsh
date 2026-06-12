@@ -30,7 +30,9 @@ pub fn get_completions_from_registered_spec(
     if let Some(stdout) = child.stdout.take() {
         let reader = BufReader::new(stdout);
         for line in reader.lines() {
-            if let Ok(completion) = line {
+            if let Ok(completion) = line
+                && completion.starts_with(prefix.as_str())
+            {
                 completions.push(completion);
             }
         }

@@ -32,6 +32,8 @@ impl Completer for CompletionHelper {
         if let Some(path) = self.registered_specs.get(&command) {
             if let Some((pos, pairs)) = get_completions_from_registered_spec(args, pos, path) {
                 return Ok((pos, pairs));
+            } else {
+                return Ok((pos, vec![]));
             }
         };
 
