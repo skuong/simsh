@@ -2,8 +2,25 @@ use rustyline::completion::Pair;
 use std::io::{BufRead, BufReader};
 use std::process::{Command, Stdio};
 
-pub fn get_completions_from_registered_spec(path: &String) -> Option<Vec<Pair>> {
+pub fn get_completions_from_registered_spec(
+    args: Vec<String>,
+    pos: usize,
+    path: &String,
+) -> Option<(usize, Vec<Pair>)> {
+    let command = args[0].clone();
+    let prefix = if args.len() == 3 {
+        args[2].clone()
+    } else {
+        args[1].clone()
+    };
+    let subcommand = if args.len() > 2 {
+        args[1].clone()
+    } else {
+        "".to_string()
+    };
+
     let mut child = Command::new(path)
+        .args(vec![command, prefix.clone(), subcommand])
         .stdout(Stdio::piped())
         .spawn()
         .expect("Failed to execute completion script");
@@ -20,7 +37,8 @@ pub fn get_completions_from_registered_spec(path: &String) -> Option<Vec<Pair>> 
     }
 
     if completions.len() > 0 {
-        return Some(
+        return Some((
+            pos - prefix.len(),
             completions
                 .iter()
                 .map(|completion| Pair {
@@ -28,7 +46,7 @@ pub fn get_completions_from_registered_spec(path: &String) -> Option<Vec<Pair>> 
                     replacement: format!("{} ", completion.clone()),
                 })
                 .collect(),
-        );
+        ));
     }
 
     None
