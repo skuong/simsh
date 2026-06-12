@@ -30,7 +30,9 @@ impl Completer for CompletionHelper {
         if let Some(path) = self.registered_specs.get(command[0])
             && command.len() > 1
         {
-            if let Some((pos, pairs)) = get_completions_from_registered_spec(line, pos, path) {
+            if let Some((pos, mut pairs)) = get_completions_from_registered_spec(line, pos, path) {
+                pairs.sort_by_key(|pair| pair.replacement.clone());
+
                 return Ok((pos, pairs));
             } else {
                 return Ok((pos, vec![]));
