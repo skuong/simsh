@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    cd, complete, echo, parser, pwd,
+    cd, complete, echo, jobs, parser, pwd,
     syscmd::{self, is_cmd_exists_in_path_and_executable},
     typecmd,
 };
@@ -14,6 +14,11 @@ pub fn handle_line(line: String, registered_specs: &mut HashMap<String, String>)
 
     if line.starts_with("echo ") {
         echo::run(&line[5..]);
+        return true;
+    }
+
+    if line.starts_with("jobs") {
+        jobs::run(&line[4..]);
         return true;
     }
 

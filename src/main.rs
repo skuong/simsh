@@ -3,6 +3,7 @@ mod complete;
 mod completion;
 mod constant;
 mod echo;
+mod jobs;
 mod parser;
 mod pwd;
 mod syscmd;
